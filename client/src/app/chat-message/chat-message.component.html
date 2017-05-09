@@ -1,4 +1,4 @@
-<li class="other">
+<li [class.other]="(!isSelfMessage)" [class.self]="(isSelfMessage)" >
 <div class="msg">
 <div class="nickname">{{message.nickname}}</div>
   <p>{{message.text}}</p>

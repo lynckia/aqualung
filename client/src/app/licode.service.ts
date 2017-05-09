@@ -68,6 +68,10 @@ export class LicodeService {
     return this.streams.asObservable();
   }
 
+  getMyNickname(): string {
+    return this.nickname;
+  }
+
   publish(video, audio) {
     video = video || true;
     audio = audio || true;

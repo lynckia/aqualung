@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ChatMessageModel } from './chatmessage';
+import { LicodeService } from '../licode.service';
 
 @Component({
   selector: 'chat-message',
@@ -8,9 +9,11 @@ import { ChatMessageModel } from './chatmessage';
 })
 export class ChatMessageComponent implements OnInit {
   @Input() message: ChatMessageModel;
-  constructor() { }
-
+  private isSelfMessage:boolean = false;
+  constructor(private licodeService: LicodeService) {
+  }
   ngOnInit() {
-    console.log(this.message);
+    this.isSelfMessage = this.message.nickname === this.licodeService.getMyNickname();
+
   }
 }
