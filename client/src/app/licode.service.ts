@@ -261,8 +261,8 @@ export class LicodeService {
         console.log("new control message", theMessage);
         switch (theMessage.action) {
           case 'switchMode':
-            this.hostMode = theMessage.mode;
-            this.currentMode = theMessage.mode;
+            this.hostMode = Object.assign({}, theMessage.mode);
+            this.currentMode = Object.assign({}, theMessage.mode);
             this.applyMode();
             break;
           case 'screenRequest':
@@ -304,15 +304,20 @@ export class LicodeService {
       console.log("There is not a hostMode yet");
       return;
     }
-    if (this.currentMode == this.hostMode) {
+    console.log(this.currentMode, this.hostMode);
+    if (this.currentMode.modeName === this.hostMode.modeName) {
+      console.log("The same!");
       this.currentMode.modeName = 'grid';
+      this.currentMode.mainStreamId = undefined;
     } else {
-      this.currentMode = this.hostMode;
+      this.currentMode.modeName = this.hostMode.modeName;
+      this.currentMode.mainStreamId = this.hostMode.mainStreamId;
     }
+    console.log("OK!", this.currentMode, this.hostMode);
     this.applyMode();
   }
 
-  private publishNewMode (mode:any) {
+  private publishNewMode(mode:any) {
     if (this.role === 'guest') {
       return;
     }
@@ -320,14 +325,16 @@ export class LicodeService {
   }
 
   maybeSwitchHostMode(newMode:string, stream:Stream) {
-    console.log("maybeSwitchHostMode", newMode, stream);
     if (this.role === 'guest') {
       return;
     }
-    this.currentMode.modeName = newMode;
-    this.currentMode.mainStreamId = stream.id;
-    this.hostMode = this.currentMode;
-    this.publishNewMode(this.currentMode);
+    console.log("maybeSwitchHostMode", newMode, stream);
+    this.hostMode = {
+      modeName: newMode,
+      mainStreamId: stream.id
+    };
+    this.currentMode = Object.assign({}, this.hostMode);
+    this.publishNewMode(this.hostMode);
     this.applyMode();
   }
 
@@ -344,12 +351,13 @@ export class LicodeService {
         }
       }
       if (!mainStream) {
+        console.log('Unknown stream');
         return;
       }
     }
 
     let screenStreamId;
-    switch(this.currentMode.modeName) {
+    switch(mode) {
       case 'grid':
         this.dataStore.streams.sort((a:Stream, b:Stream) => {
           if (a.local) { return -1; }
@@ -392,6 +400,7 @@ export class LicodeService {
         return;
     }
     this.dataStore.mode = mode;
+    console.log("Apply mode", this.dataStore);
     this.notifyStreamsChange();
     this.notifyModeChange();
   }
