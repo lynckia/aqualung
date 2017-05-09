@@ -1,4 +1,4 @@
-<settings class="settings_container"></settings>
+<settings class="settings_container" [class.hidden]="(!settings_active)"></settings>
 <video-grid></video-grid>
-<chat-thread class="chat_container"></chat-thread>
+<chat-thread class="chat_container" [class.hidden]="(!chat_active)"></chat-thread>
 <sidebar class="sidebar_container"></sidebar>

@@ -15,10 +15,27 @@ export class RoomComponent implements OnInit {
   private nickname: string;
   private role: string;
 
+  private chat_active:boolean = false;
+  private settings_active:boolean = false;
+
   constructor(
     private route: ActivatedRoute,
-    private licodeService: LicodeService
-  ) {}
+    private licodeService: LicodeService,
+    private busService: BusService
+  ) {
+    this.busService.messageSent$.subscribe(
+      message => {
+        console.log(message);
+        switch(message) {
+          case 'comment':
+            this.chat_active = !this.chat_active;
+            break;
+          case 'gear':
+            this.settings_active = !this.settings_active;
+            break;
+        }
+      });
+  }
 
   ngOnInit() {
     this.route.params.subscribe(params => {

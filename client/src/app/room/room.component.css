@@ -36,3 +36,7 @@
   background-color: rgba(200, 200, 200, .5);
   border: 1px white;
 }
+
+.hidden {
+  display: none;
+}
