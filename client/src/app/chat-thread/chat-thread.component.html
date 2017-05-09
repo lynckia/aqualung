@@ -2,7 +2,7 @@
   <div class="menu">
               <div class="name">Chat</div>
   </div>
-  <ol class="chat">
+  <ol #chatlist class="chat">
        <li *ngFor="let message of chatMessages">
          <chat-message [message]="message"> </chat-message>
        </li>

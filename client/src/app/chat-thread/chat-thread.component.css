@@ -85,6 +85,8 @@
     padding: 0 0 50px 0;
     margin-top: 60px;
     margin-bottom: 10px;
+    max-height: 150px;
+    overflow:scroll;
 }
 /deep/ .chat li {
     padding: 0.5rem;
@@ -94,19 +96,6 @@
 /deep/ .chat .nickname {
   font-size: 10px;
   font-weight: bold;
-}
-/deep/ .chat .avatar {
-    font-size: 10px;
-    width: 40px;
-    /*height: 40px;*/
-    position: relative;
-    display: block;
-    z-index: 2;
-    /*border-radius: 100%;
-    -webkit-border-radius: 100%;
-    -moz-border-radius: 100%;
-    -ms-border-radius: 100%; */
-    background-color: rgba(255,255,255,0.9);
 }
 /deep/ .chat .day {
     position: relative;
@@ -131,18 +120,6 @@
     border-top-left-radius: 0px;
     box-shadow: -1px 2px 0px #D4D4D4;
 }
-/deep/ .other:before {
-    content: "";
-    position: relative;
-    top: 0px;
-    right: 0px;
-    left: 40px;
-    width: 0px;
-    height: 0px;
-    border: 5px solid #fff;
-    border-left-color: transparent;
-    border-bottom-color: transparent;
-}
 
 /deep/ .self {
     justify-content: flex-end;
@@ -155,19 +132,6 @@
 }
 /deep/ .self .avatar {
     order: 2;
-}
-/deep/ .self .avatar:after {
-    content: "";
-    position: relative;
-    display: inline-block;
-    bottom: 19px;
-    right: 0px;
-    width: 0px;
-    height: 0px;
-    border: 5px solid #fff;
-    border-right-color: transparent;
-    border-top-color: transparent;
-    box-shadow: 0px 2px 0px #D4D4D4;
 }
 
 /deep/ .msg {
@@ -252,40 +216,6 @@
   to { opacity: 0.5; }
 }
 
-/deep/ ::-webkit-scrollbar {
-    min-width: 12px;
-    width: 12px;
-    max-width: 12px;
-    min-height: 12px;
-    height: 12px;
-    max-height: 12px;
-    background: #e5e5e5;
-    box-shadow: inset 0px 50px 0px rgba(82,179,217,0.9), inset 0px -52px 0px #fafafa;
-}
-
-/deep/ ::-webkit-scrollbar-thumb {
-    background: #bbb;
-    border: none;
-    border-radius: 100px;
-    border: solid 3px #e5e5e5;
-    box-shadow: inset 0px 0px 3px #999;
-}
-
-/deep/ ::-webkit-scrollbar-thumb:hover {
-    background: #b0b0b0;
-  box-shadow: inset 0px 0px 3px #888;
-}
-
-/deep/ ::-webkit-scrollbar-thumb:active {
-    background: #aaa;
-  box-shadow: inset 0px 0px 3px #7f7f7f;
-}
-
-/deep/ ::-webkit-scrollbar-button {
-    display: block;
-    height: 26px;
-}
-
 /* T Y P E */
 
 /deep/ input.textarea {
@@ -298,23 +228,8 @@
     background: #fafafa;
     border: none;
     outline: none;
-    padding-left: 55px;
-    padding-right: 55px;
+    padding-left: 0px;
+    padding-right: 0px;
     color: #666;
     font-weight: 400;
-}
-/deep/ .emojis {
-    display: block;
-    bottom: 8px;
-    left: 7px;
-    width: 34px;
-    height: 34px;
-    background-image: url(http://i.imgur.com/5WUpcPZ.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-    z-index: 100;
-    cursor: pointer;
-}
-/deep/ .emojis:active {
-    opacity: 0.9;
 }
