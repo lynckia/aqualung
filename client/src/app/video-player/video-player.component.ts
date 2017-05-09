@@ -11,6 +11,9 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
   @Input()
   stream: Stream;
 
+  @Input()
+  visible: boolean;
+
   constructor() {
   }
 
@@ -19,7 +22,12 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
       loader: false,
       bar: false
     };
-    setTimeout(() => this.nativeStream.play("aqua_video_stream_" + this.stream.id, options), 0);
+    setTimeout(() => {
+      if (!this.visible) {
+        // this.nativeStream.muteVideo();
+      }
+      this.nativeStream.play("aqua_video_stream_" + this.stream.id, options);
+    }, 0);
   }
 
   ngOnDestroy() {

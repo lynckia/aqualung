@@ -12,6 +12,7 @@ export class Stream {
   id: number;
   active: boolean;
   stream: any;
+  local: boolean;
   screensharing: boolean;
 }
 
@@ -24,6 +25,7 @@ export class LicodeService {
     streams: Stream[];
   }
   private room;
+  private myStream;
 
   constructor(private http: Http) {
     this.dataStore = { streams: [] };
@@ -57,21 +59,43 @@ export class LicodeService {
     return this.streams.asObservable();
   }
 
+  publish() {
+    this.myStream = Erizo.Stream({audio: true, video: true});
+    this.myStream.init();
+    this.myStream.addEventListener('access-accepted', (event) => {
+      console.log("Access to webcam and/or microphone granted");
+      this.room.publish(this.myStream);
+    });
+    this.myStream.addEventListener('access-denied', (event) => {
+      console.log("Access to webcam and/or microphone rejected");
+    });
+  }
+
   private onRoomConnected(roomEvent) {
     let nativeStreams = roomEvent.streams;
+    this.publish();
     for (let stream of nativeStreams) {
-      this.room.subscribe(stream);
+      this.onAddStream({stream: stream});
     }
+
   }
 
   private onAddStream(streamEvent) {
-    this.room.subscribe(streamEvent.stream);
+    if (streamEvent.stream.getID() !== this.myStream.getID()) {
+      this.room.subscribe(streamEvent.stream);
+    } else {
+      this.playStream({stream: this.myStream});
+    }
   }
 
   private playStream(streamEvent) {
     let licodeStream = streamEvent.stream;
-    this.dataStore.streams.push({id: licodeStream.getID(), active: true, screensharing: licodeStream.hasScreen(), stream: licodeStream});
-    this.streams.next(Object.assign({}, this.dataStore).streams);
+    this.dataStore.streams.push({id: licodeStream.getID(),
+                                 active: true,
+                                 screensharing: licodeStream.hasScreen(),
+                                 stream: licodeStream,
+                                 local: this.myStream === licodeStream});
+    this.notifyStreamsChange();
   }
 
   private removeStream(streamEvent) {
@@ -81,7 +105,16 @@ export class LicodeService {
         this.dataStore.streams.splice(index, 1);
       }
     });
-    this.streams.next(Object.assign({}, this.dataStore).streams);
+    this.notifyStreamsChange();
+  }
+
+  private notifyStreamsChange() {
+    let newStreamList = Object.assign({}, this.dataStore).streams;
+    newStreamList.sort((a:Stream, b:Stream) => {
+      if (a.local) { return -1; }
+      return 1;
+    });
+    this.streams.next(newStreamList);
   }
 
   private handleError (error: Response | any) {

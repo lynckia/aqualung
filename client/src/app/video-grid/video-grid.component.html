@@ -1,3 +1,9 @@
 <div class="aqua-video-grid {{mode}}">
-  <video-player *ngFor="let stream of streams" [stream]="stream" [class.hidden]="(mode !== 'screensharing' && stream.screensharing) || !stream.active" [class.screensharing]="stream.screensharing" [class.video]="!stream.screensharing" (click)="onClick(stream)"></video-player>
+  <video-player *ngFor="let stream of streams"
+    [stream]="stream"
+    [visible]="!(mode === 'screensharing' && !stream.screensharing) && stream.active"
+    [class.hidden]="(mode !== 'screensharing' && stream.screensharing) || !stream.active"
+    [class.screensharing]="stream.screensharing"
+    [class.video]="!stream.screensharing"
+    (click)="onClick(stream)"></video-player>
 <div>
