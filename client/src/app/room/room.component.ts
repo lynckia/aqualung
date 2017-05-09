@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LicodeService } from './../licode.service';
+import { BusService } from './../bus.service';
 
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
   styleUrls: ['./room.component.css'],
-  providers: [LicodeService]
+  providers: [LicodeService, BusService]
 })
 export class RoomComponent implements OnInit {
 
