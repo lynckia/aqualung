@@ -84,7 +84,8 @@ export class LicodeService {
   }
 
   publishChatMessage(text:string) {
-    this.room.sendData({type:'Chat', text:text, nickname: this.nickname});
+    console.log("ROOM", this.room)
+    this.myStream.sendData({type:'Chat', text:text, nickname: this.nickname});
   }
 
   private onRoomConnected(roomEvent) {

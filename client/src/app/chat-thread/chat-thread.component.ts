@@ -4,10 +4,9 @@ import { Subscription } from 'rxjs/Subscription';
 import { LicodeService } from '../licode.service';
 
 @Component({
-  selector: 'app-chat-thread',
+  selector: 'chat-thread',
   templateUrl: './chat-thread.component.html',
-  styleUrls: ['./chat-thread.component.css'],
-  providers: [ LicodeService ]
+  styleUrls: ['./chat-thread.component.css']
 })
 export class ChatThreadComponent implements OnInit {
   private chatMessages : ChatMessageModel[] = [];
@@ -21,7 +20,8 @@ export class ChatThreadComponent implements OnInit {
   }
   ngOnInit(): void {
   }
-  onEnter(value: string) {
-    console.log("Sending ", value);
-    this.licodeService.publishChatMessage(value); }
+  onEnter(box: HTMLInputElement) {
+    this.licodeService.publishChatMessage(box.value);
+    box.value = "";
+  }
 }

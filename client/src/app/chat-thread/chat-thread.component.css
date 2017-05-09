@@ -1,6 +1,6 @@
-/*@import url(http://fonts.googleapis.com/css?family=Lato:100,300,400,700);
+@import url(http://fonts.googleapis.com/css?family=Lato:100,300,400,700);
 @import url(http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css);
-*/
+
 /deep/ .chat-box {
     background: #e5e5e5;
     font-family: 'Lato', sans-serif;
@@ -18,7 +18,6 @@
 /* M E N U */
 
 /deep/ .menu {
-    position: fixed;
     top: 0px;
     left: 0px;
     right: 0px;
@@ -33,7 +32,6 @@
 }
 
 /deep/ .back {
-    position: absolute;
     width: 90px;
     height: 50px;
     top: 0px;
@@ -45,7 +43,6 @@
     cursor: pointer;
 }
 /deep/ .back img {
-    position: absolute;
     top: 5px;
     left: 30px;
     width: 40px;
@@ -61,7 +58,6 @@
     background: rgba(255,255,255,0.2);
 }
 /deep/ .name{
-    position: absolute;
     top: 3px;
     left: 110px;
     font-family: 'Lato';
@@ -71,7 +67,6 @@
     cursor: default;
 }
 /deep/ .last{
-    position: absolute;
     top: 30px;
     left: 115px;
     font-family: 'Lato';
@@ -294,7 +289,6 @@
 /* T Y P E */
 
 /deep/ input.textarea {
-    position: fixed;
     bottom: 0px;
     left: 0px;
     right: 0px;
@@ -310,7 +304,6 @@
     font-weight: 400;
 }
 /deep/ .emojis {
-    position: fixed;
     display: block;
     bottom: 8px;
     left: 7px;

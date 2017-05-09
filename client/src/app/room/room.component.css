@@ -9,3 +9,17 @@
   background-color: white;
   opacity: 0.5;
 }
+
+.chat_container {
+  display: block;
+  position: absolute;
+  right: 0px;
+  margin-top: -100px;
+  top: 50%;
+  width: 30%;
+  height: 200px;
+  z-index: 0;
+  background-color: white;
+  opacity: 1;
+  overflow: scroll;
+}
