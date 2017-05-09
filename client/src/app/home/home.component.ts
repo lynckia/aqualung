@@ -15,11 +15,16 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
   }
 
-  createRoom(event) {
-  	console.log('Home Component, creating room');
-  	let roomName = Math.floor(Math.random() * 1000000) + 1;
-  	let hostKey = Math.floor(Math.random() * 1000000) + 1;
-  	this.router.navigate(['/room', roomName, {key: hostKey}]);
+  createRoom(room, nickname) {
+  	
+  	var hostKey;
+
+  	if (!room) {
+  		room = Math.floor(Math.random() * 1000000) + 1;
+  		hostKey = Math.floor(Math.random() * 1000000) + 1;			  		
+  	}
+
+  	this.router.navigate(['/room', room, {key: hostKey, nickname: nickname}]);
   }
 
 }

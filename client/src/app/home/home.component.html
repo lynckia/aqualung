@@ -1,4 +1,10 @@
 <h1>Welcome to aqualung</h1>
-<p>Nick Name<input type="text"/></p>
-<p>Join room<input type="text"/></p>
-<p><button (click)="createRoom()">Create Room</button></p>
+<p>Nick Name
+	<input #nickname (keyup.enter)="createRoom(room.value, nickname.value)">
+</p>
+
+<p>Join room
+	<input #room (keyup.enter)="createRoom(room.value, nickname.value)">
+	<button (click)="createRoom(room.value, nickname.value)">Join room</button>
+</p>
+<p>Host a new room<button (click)="createRoom('', nickname.value)">Create Room</button></p>
