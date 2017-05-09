@@ -86,7 +86,7 @@ export class LicodeService {
       this.room.addEventListener('stream-added',      this.onAddStream.bind(this));
       this.room.addEventListener('stream-removed',    this.removeStream.bind(this));
       this.room.addEventListener('stream-subscribed', this.playStream.bind(this));
-
+      this.applyMode();
       return this.room;
     })
     .catch(this.handleError);
@@ -98,6 +98,10 @@ export class LicodeService {
 
   getStreams(): Observable<Stream[]> {
     return this.streams.asObservable();
+  }
+
+  getMode(): Observable<string> {
+    return this.mode.asObservable();
   }
 
   getMyNickname(): string {
@@ -146,8 +150,8 @@ export class LicodeService {
       if (this.role === 'guest') {
         this.myStream.sendData({type:'Control', action: 'requestScreen'});
       } else {
-        console.log('foo')
-        // TODO: Change to screen sharing mode
+        this.currentMode.modeName = 'screensharing';
+        this.applyMode();
       }
     });
     this.myScreen.addEventListener('access-denied', (event) => {
@@ -181,22 +185,32 @@ export class LicodeService {
 
   private playStream(streamEvent) {
     let licodeStream = streamEvent.stream;
-    this.dataStore.streams.push({id: licodeStream.getID(),
+    var stream = {id: licodeStream.getID(),
                                  active: true,
                                  screensharing: licodeStream.hasScreen(),
                                  stream: licodeStream,
-                                 local: this.myStream === licodeStream});
-    this.notifyStreamsChange();
+                                 local: this.myStream === licodeStream};
+    this.dataStore.streams.push(stream);
+    if (this.myStream && this.currentMode.modeName === 'screensharing') {
+      this.maybeSwitchHostMode('screensharing', stream);
+    }
   }
 
   private removeStream(streamEvent) {
     let licodeStream = streamEvent.stream;
+    if (licodeStream.getID() === this.currentMode.mainStreamId) {
+      this.currentMode = {
+        modeName: 'grid',
+        mainStreamId: undefined
+      };
+    }
+
     this.dataStore.streams.forEach((stream, index) => {
       if (stream.id === licodeStream.getID()) {
         this.dataStore.streams.splice(index, 1);
       }
     });
-    this.notifyStreamsChange();
+    this.applyMode();
   }
 
   private notifyStreamsChange() {
@@ -287,10 +301,23 @@ export class LicodeService {
     this.applyMode();
   }
 
-  applyMode() {
-    let mainStreamId = this.currentMode.mainStreamId;
-    let mainStream:Stream;
+  private applyMode() {
+    let currentStreamId = this.currentMode.mainStreamId;
     let mode = this.currentMode.modeName;
+    let mainStreamId;
+    let mainStream:Stream;
+    if (mode !== 'grid') {
+      for (let stream of this.dataStore.streams) {
+        if (currentStreamId === stream.id) {
+          mainStreamId = currentStreamId;
+          mainStream = stream;
+        }
+      }
+      if (!mainStream) {
+        return;
+      }
+    }
+
     let screenStreamId;
     switch(this.currentMode.modeName) {
       case 'grid':
