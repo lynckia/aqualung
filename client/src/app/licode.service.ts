@@ -36,6 +36,11 @@ export class LicodeService {
   private myScreen;
   private nickname: string;
   private role: string;
+  private currentMode = {
+    modeName: 'grid',
+    mainStreamId: undefined
+  };
+  private hostMode = undefined;
 
   constructor(private http: Http, private busService:BusService) {
     this.dataStore = { streams: [], chatMessages: [], mode: 'grid' };
@@ -52,6 +57,8 @@ export class LicodeService {
             } else {
               this.unPublishScreen();
             }
+          case 'th':
+            this.maybeToggleMode()
             break;
           default:
             console.log('Licode Service, Unvalid message');
@@ -125,7 +132,6 @@ export class LicodeService {
   }
 
   publishChatMessage(text:string) {
-    console.log("ROOM", this.room)
     this.myStream.sendData({type:'Chat', text:text, nickname: this.nickname});
     this.dataStore.chatMessages.push(new ChatMessageModel(this.nickname, text));
     this.notifyChatChange();
@@ -239,13 +245,23 @@ export class LicodeService {
     return Observable.throw(errMsg);
   }
 
-  // switchToMode('grid');
-  // switchToMode('oneplusn', mainStream);
-  // switchToMode('screensharing', screenStream);
-  switchToMode(mode:string, mainStream:Stream = undefined) {
-    let mainStreamId;
+  private maybeToggleMode() {
+    if (!this.hostMode){
+      console.log("There isn't defined hostMode yet");
+      return;
+    }
+    if (this.currentMode == this.hostMode) {
+    } else {
+    }
+
+  }
+
+  applyMode() {
+    let mainStreamId = this.currentMode.mainStreamId;
+    let mainStream:Stream;
+    let mode = this.currentMode.modeName;
     let screenStreamId;
-    switch(mode) {
+    switch(this.currentMode.modeName) {
       case 'grid':
         this.dataStore.streams.sort((a:Stream, b:Stream) => {
           if (a.local) { return -1; }
