@@ -24,6 +24,19 @@
   opacity: 1;
 }
 
+.requests_container {
+  display: block;
+  position: absolute;
+  right: 0px;
+  margin-top: -100px;
+  top: 50%;
+  width: 30%;
+  height: 200px;
+  z-index: 0;
+  background-color: white;
+  opacity: 1;
+}
+
 .settings_container {
   position: absolute;
   left: 50%;

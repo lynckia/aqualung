@@ -14,6 +14,8 @@ import { ChatMessageComponent } from './chat-message/chat-message.component';
 import { SidebarButtonComponent } from './sidebar-button/sidebar-button.component'
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SettingsComponent } from './settings/settings.component';
+import { RequestThreadComponent } from './request-thread/request-thread.component';
+import { RequestItemComponent } from './request-item/request-item.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,9 @@ import { SettingsComponent } from './settings/settings.component';
     ChatMessageComponent,
     SidebarComponent,
     SidebarButtonComponent,
-    SettingsComponent
+    SettingsComponent,
+    RequestThreadComponent,
+    RequestItemComponent
   ],
   imports: [
     BrowserModule,

@@ -17,6 +17,7 @@ export class RoomComponent implements OnInit {
 
   private chat_active:boolean = false;
   private settings_active:boolean = false;
+  private requests_active:boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -32,6 +33,9 @@ export class RoomComponent implements OnInit {
             break;
           case 'gear':
             this.settings_active = !this.settings_active;
+            break;
+          case 'bars':
+            this.requests_active = !this.requests_active;
             break;
         }
       });

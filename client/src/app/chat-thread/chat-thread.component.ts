@@ -4,13 +4,11 @@ import { Subscription } from 'rxjs/Subscription';
 import { LicodeService } from '../licode.service';
 import { BusService } from '../bus.service';
 
-
 @Component({
   selector: 'chat-thread',
   templateUrl: './chat-thread.component.html',
   styleUrls: ['./chat-thread.component.css']
 })
-
 
 export class ChatThreadComponent implements OnInit {
   private chatMessages : ChatMessageModel[] = [];
@@ -25,7 +23,8 @@ export class ChatThreadComponent implements OnInit {
         if (this.chatBox) {
           this.chatBox.nativeElement.scrollTop =this.chatBox.nativeElement.scrollHeight;
         }
-      });
+      }
+    );
 
     this.busService.messageSent$.subscribe(
       message => {

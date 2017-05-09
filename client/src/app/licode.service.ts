@@ -8,6 +8,8 @@ import 'rxjs/add/operator/map';
 import { BusService } from './bus.service';
 
 import { ChatMessageModel } from './chat-message/chatmessage';
+import { ScreenRequestModel } from './request-item/request-item.component';
+
 
 declare var Erizo:any;
 
@@ -25,9 +27,11 @@ export class LicodeService {
   private basicExampleUrl = 'https://chotis2.dit.upm.es:3004/createToken';
   private streams: BehaviorSubject<Stream[]>;
   private chatMessages: BehaviorSubject<ChatMessageModel[]>;
+  private screenRequests: BehaviorSubject<ScreenRequestModel[]>;
   private dataStore: {
     streams: Stream[],
-    chatMessages: ChatMessageModel[]
+    chatMessages: ChatMessageModel[],
+    screenRequests: ScreenRequestModel[]
   };
   private room;
   private myStream;
@@ -36,9 +40,10 @@ export class LicodeService {
   private role: string;
 
   constructor(private http: Http, private busService:BusService) {
-    this.dataStore = { streams: [], chatMessages: [] };
+    this.dataStore = { streams: [], chatMessages: [], screenRequests: [] };
     this.streams = <BehaviorSubject<Stream[]>>new BehaviorSubject([]);
     this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
+    this.screenRequests = <BehaviorSubject<ScreenRequestModel[]>>new BehaviorSubject([]);
 
     this.busService.messageSent$.subscribe(
       message => {
@@ -116,6 +121,10 @@ export class LicodeService {
   updateAVConstraints(video, audio) {
     this.unpublish();
     this.publish(video, audio);
+  }
+
+  getScreenRequests() :Observable<ScreenRequestModel[]> {
+    return this.screenRequests.asObservable();
   }
 
   getChatMessages() :Observable<ChatMessageModel[]> {
@@ -199,14 +208,21 @@ export class LicodeService {
     });
     this.streams.next(newStreamList);
   }
+
   private notifyChatChange() {
     let newChatList = Object.assign({}, this.dataStore).chatMessages;
     this.chatMessages.next(newChatList);
   }
 
+  private notifyRequestsChange() {
+    let newRequestsList = Object.assign({}, this.dataStore).screenRequests;
+    this.screenRequests.next(newRequestsList);
+  }
+
   private onDataMessage(streamEvent) {
     console.log("New data message ", streamEvent);
     let theMessage = streamEvent.msg;
+    let theStream = streamEvent.stream;
     switch(streamEvent.msg.type) {
       case 'Chat':
         console.log("new chat message", theMessage);
@@ -215,6 +231,11 @@ export class LicodeService {
       break;
       case 'Control':
         console.log("new control message", theMessage);
+        if (this.role === 'host') {
+          console.log('paspdpaspdpasdppasdppasdpapsdpa', streamEvent);
+          this.dataStore.screenRequests.push(new ScreenRequestModel(theStream.getID()));
+          this.notifyRequestsChange();
+        }
       break;
       default:
         console.log("Default");

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { BusService } from '../bus.service';
 
 @Component({
@@ -6,18 +6,35 @@ import { BusService } from '../bus.service';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
 })
+
 export class SidebarComponent implements OnInit {
+  @Input()
+  role: string;
+
   private buttons:string[];
   constructor(private busService: BusService) {
-    this.buttons = [
-      'th',
-      'comment',
-      'television',
-      'gear'
-    ];
+
   }
 
   ngOnInit() {
+    console.log('REOLELEELEL ', this.role);
+    if (this.role === 'host') {
+      this.buttons = [
+        'th',
+        'comment',
+        'television',
+        'bars',
+        'gear'
+      ];
+    } else {
+      this.buttons = [
+        'th',
+        'comment',
+        'television',
+        'gear'
+      ];
+    }
+    
   }
 
   private onClick(button:string) {
