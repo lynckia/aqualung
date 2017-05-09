@@ -10,7 +10,9 @@ import { LicodeService } from './../licode.service';
 })
 export class RoomComponent implements OnInit {
 
-  id;
+  private id: number;
+  private nickname: string;
+  private hostKey: number;
 
   constructor(
     private route: ActivatedRoute,
@@ -19,18 +21,20 @@ export class RoomComponent implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-       this.id = params['id'];
 
-       console.log(this.id);
-       this.licodeService.connect(this.id).subscribe(
-          room => {
-              // Log errors if any
-              console.log('ahi va', room);
-          },
-          err => {
-              // Log errors if any
-              console.log(err);
-          });
+      this.id = params['id'];
+      this.nickname = params['nickname'];
+      this.hostKey = params['key'];
+
+      this.licodeService.connect(this.id, this.nickname, this.hostKey).subscribe(
+        room => {
+            // Log errors if any
+            console.log('ahi va', room);
+        },
+        err => {
+            // Log errors if any
+            console.log(err);
+        });
     });
   }
 }
