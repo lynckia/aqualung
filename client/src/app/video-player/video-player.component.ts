@@ -27,14 +27,15 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
         // this.nativeStream.muteVideo();
       }
       this.nativeStream.play("aqua_video_stream_" + this.stream.id, options);
+      console.log("Creating video player");
     }, 0);
   }
 
   ngOnDestroy() {
+    console.log("Destroying video player");
   }
 
   maybeFeatureVideo() {
-    console.log("MaybeSwitchHostMode", this.stream)
     this.licodeService.maybeSwitchHostMode('oneplusn', this.stream);
   }
 
