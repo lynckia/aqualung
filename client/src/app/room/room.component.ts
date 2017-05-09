@@ -10,9 +10,9 @@ import { LicodeService } from './../licode.service';
 })
 export class RoomComponent implements OnInit {
 
-  private id: number;
+  private id: any;
   private nickname: string;
-  private hostKey: number;
+  private role: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -24,9 +24,13 @@ export class RoomComponent implements OnInit {
 
       this.id = params['id'];
       this.nickname = params['nickname'];
-      this.hostKey = params['key'];
 
-      this.licodeService.connect(this.id, this.nickname, this.hostKey).subscribe(
+      if (parseInt(this.id) == this.id) this.role = 'host';
+      else this.role = 'guest';
+
+      console.log('***********ROLE', this.role);
+
+      this.licodeService.connect(this.id, this.nickname).subscribe(
         room => {
             // Log errors if any
             console.log('ahi va', room);
