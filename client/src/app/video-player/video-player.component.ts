@@ -14,7 +14,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
   @Input()
   visible: boolean;
 
-  constructor() {
+  constructor(private licodeService: LicodeService) {
   }
 
   ngOnInit() {
@@ -31,6 +31,11 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+  }
+
+  maybeFeatureVideo() {
+    console.log("MaybeSwitchHostMode", this.stream)
+    this.licodeService.maybeSwitchHostMode('oneplusn', this.stream);
   }
 
   private get nativeStream() {

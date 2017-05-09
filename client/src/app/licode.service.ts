@@ -58,7 +58,7 @@ export class LicodeService {
               this.unPublishScreen();
             }
           case 'th':
-            this.maybeToggleMode()
+            this.maybeToggleLocalMode();
             break;
           default:
             console.log('Licode Service, Unvalid message');
@@ -217,7 +217,7 @@ export class LicodeService {
   private onDataMessage(streamEvent) {
     console.log("New data message ", streamEvent);
     let theMessage = streamEvent.msg;
-    switch(streamEvent.msg.type) {
+    switch(theMessage.type) {
       case 'Chat':
         console.log("new chat message", theMessage);
         this.dataStore.chatMessages.push(new ChatMessageModel(theMessage.nickname, theMessage.text));
@@ -225,6 +225,16 @@ export class LicodeService {
       break;
       case 'Control':
         console.log("new control message", theMessage);
+        switch (theMessage.action) {
+          case 'switchMode':
+            this.hostMode = theMessage.mode;
+            this.currentMode = theMessage.mode;
+            this.applyMode();
+            break;
+          default:
+          console.log("Unknown Control message");
+        }
+
       break;
       default:
         console.log("Default");
@@ -245,15 +255,36 @@ export class LicodeService {
     return Observable.throw(errMsg);
   }
 
-  private maybeToggleMode() {
+  private maybeToggleLocalMode() {
     if (!this.hostMode){
-      console.log("There isn't defined hostMode yet");
+      console.log("There is not a hostMode yet");
       return;
     }
     if (this.currentMode == this.hostMode) {
+      this.currentMode.modeName = 'grid';
     } else {
+      this.currentMode = this.hostMode;
     }
+    this.applyMode();
+  }
 
+  private publishNewMode (mode:any) {
+    if (this.role === 'guest') {
+      return;
+    }
+    this.myStream.sendData({type:'Control', action: 'switchMode', mode:mode});
+  }
+
+  maybeSwitchHostMode(newMode:string, stream:Stream) {
+    console.log("maybeSwitchHostMode", newMode, stream);
+    if (this.role === 'guest') {
+      return;
+    }
+    this.currentMode.modeName = newMode;
+    this.currentMode.mainStreamId = stream.id;
+    this.hostMode = this.currentMode;
+    this.publishNewMode(this.currentMode);
+    this.applyMode();
   }
 
   applyMode() {
