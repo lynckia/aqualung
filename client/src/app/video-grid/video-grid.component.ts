@@ -11,13 +11,13 @@ import { LicodeService, Stream } from './../licode.service';
 export class VideoGridComponent implements OnInit {
 
   private streams: Stream[] = [];
-  private streamSubscription: Subscription;
-
   private mode: string;
+  private streamSubscription: Subscription;
 
   constructor(private licodeService: LicodeService) {
     this.mode = 'grid';
     this.streamSubscription = this.licodeService.getStreams().subscribe(streams => { this.streams = streams; });
+    this.streamSubscription = this.licodeService.getMode().subscribe(mode => { this.mode = mode; });
   }
 
   ngOnInit() {

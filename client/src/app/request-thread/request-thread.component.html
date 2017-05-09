@@ -1,0 +1,7 @@
+<div class="requests_container">
+<ul>
+	<li *ngFor="let request of screenRequests">
+		<request-item [request]="request" (click)="onClick(request)"></request-item>
+	</li>
+</ul>
+</div>

@@ -28,22 +28,31 @@ export class LicodeService {
   private streams: BehaviorSubject<Stream[]>;
   private chatMessages: BehaviorSubject<ChatMessageModel[]>;
   private screenRequests: BehaviorSubject<ScreenRequestModel[]>;
+  private mode: BehaviorSubject<string>;
   private dataStore: {
     streams: Stream[],
     chatMessages: ChatMessageModel[],
-    screenRequests: ScreenRequestModel[]
+    screenRequests: ScreenRequestModel[],
+    mode: string
   };
   private room;
   private myStream;
   private myScreen;
   private nickname: string;
   private role: string;
+  private currentMode = {
+    modeName: 'grid',
+    mainStreamId: undefined
+  };
+  private hostMode = undefined;
 
   constructor(private http: Http, private busService:BusService) {
-    this.dataStore = { streams: [], chatMessages: [], screenRequests: [] };
+
+    this.dataStore = { streams: [], chatMessages: [], screenRequests: [], mode: 'grid' };
     this.streams = <BehaviorSubject<Stream[]>>new BehaviorSubject([]);
     this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
     this.screenRequests = <BehaviorSubject<ScreenRequestModel[]>>new BehaviorSubject([]);
+    this.mode = <BehaviorSubject<string>>new BehaviorSubject('grid');
 
     this.busService.messageSent$.subscribe(
       message => {
@@ -55,6 +64,8 @@ export class LicodeService {
             } else {
               this.unPublishScreen();
             }
+          case 'th':
+            this.maybeToggleLocalMode();
             break;
           default:
             console.log('Licode Service, Unvalid message');
@@ -82,7 +93,7 @@ export class LicodeService {
       this.room.addEventListener('stream-added',      this.onAddStream.bind(this));
       this.room.addEventListener('stream-removed',    this.removeStream.bind(this));
       this.room.addEventListener('stream-subscribed', this.playStream.bind(this));
-
+      this.applyMode();
       return this.room;
     })
     .catch(this.handleError);
@@ -94,6 +105,10 @@ export class LicodeService {
 
   getStreams(): Observable<Stream[]> {
     return this.streams.asObservable();
+  }
+
+  getMode(): Observable<string> {
+    return this.mode.asObservable();
   }
 
   getMyNickname(): string {
@@ -132,24 +147,26 @@ export class LicodeService {
   }
 
   publishChatMessage(text:string) {
-    console.log("ROOM", this.room)
     this.myStream.sendData({type:'Chat', text:text, nickname: this.nickname});
     this.dataStore.chatMessages.push(new ChatMessageModel(this.nickname, text));
     this.notifyChatChange();
   }
 
   private publishScreen() {
-    this.myScreen = Erizo.Stream({screen: true, attributes: {myStream: this.myStream.getID()}});
+    this.myScreen = Erizo.Stream({screen: true, data: true, attributes: {myStream: this.myStream.getID()}});
     this.myScreen.init();
     this.myScreen.addEventListener('access-accepted', (event) => {
       console.log("Access to webcam and/or microphone granted");
-      this.room.publish(this.myScreen);
-      if (this.role === 'guest') {
-        this.myStream.sendData({type:'Control', action: 'requestScreen'});
-      } else {
-        console.log('foo')
-        // TODO: Change to screen sharing mode
-      } 
+      var self = this;
+      this.room.publish(this.myScreen, {}, function (id, error) {
+        if (self.role === 'guest') {
+          self.myStream.sendData({type:'Control', action: 'screenRequest', streamId: id});
+        } else {
+          self.currentMode.modeName = 'screensharing';
+          self.applyMode();
+        }
+      });
+      
     });
     this.myScreen.addEventListener('access-denied', (event) => {
       console.log("Access to webcam and/or microphone rejected");
@@ -159,7 +176,7 @@ export class LicodeService {
   private unPublishScreen() {
     this.room.unpublish(this.myScreen);
     this.myScreen.close();
-    this.myScreen = undefined; 
+    this.myScreen = undefined;
   }
 
   private onRoomConnected(roomEvent) {
@@ -182,31 +199,42 @@ export class LicodeService {
 
   private playStream(streamEvent) {
     let licodeStream = streamEvent.stream;
-    this.dataStore.streams.push({id: licodeStream.getID(),
-                                 active: true,
-                                 screensharing: licodeStream.hasScreen(),
-                                 stream: licodeStream,
-                                 local: this.myStream === licodeStream});
-    this.notifyStreamsChange();
+    var stream = {id: licodeStream.getID(),
+                  active: true,
+                  screensharing: licodeStream.hasScreen(),
+                  stream: licodeStream,
+                  local: this.myStream === licodeStream};
+    this.dataStore.streams.push(stream);
+    if (this.myStream && this.currentMode.modeName === 'screensharing') {
+      this.maybeSwitchHostMode('screensharing', stream);
+    }
   }
 
   private removeStream(streamEvent) {
     let licodeStream = streamEvent.stream;
+    if (licodeStream.getID() === this.currentMode.mainStreamId) {
+      this.currentMode = {
+        modeName: 'grid',
+        mainStreamId: undefined
+      };
+    }
+
     this.dataStore.streams.forEach((stream, index) => {
       if (stream.id === licodeStream.getID()) {
         this.dataStore.streams.splice(index, 1);
       }
     });
-    this.notifyStreamsChange();
+    this.applyMode();
   }
 
   private notifyStreamsChange() {
     let newStreamList = Object.assign({}, this.dataStore).streams;
-    newStreamList.sort((a:Stream, b:Stream) => {
-      if (a.local) { return -1; }
-      return 1;
-    });
     this.streams.next(newStreamList);
+  }
+
+  private notifyModeChange() {
+    let newMode = Object.assign({}, this.dataStore).mode;
+    this.mode.next(newMode);
   }
 
   private notifyChatChange() {
@@ -223,7 +251,7 @@ export class LicodeService {
     console.log("New data message ", streamEvent);
     let theMessage = streamEvent.msg;
     let theStream = streamEvent.stream;
-    switch(streamEvent.msg.type) {
+    switch(theMessage.type) {
       case 'Chat':
         console.log("new chat message", theMessage);
         this.dataStore.chatMessages.push(new ChatMessageModel(theMessage.nickname, theMessage.text));
@@ -231,12 +259,27 @@ export class LicodeService {
       break;
       case 'Control':
         console.log("new control message", theMessage);
-        if (this.role === 'host') {
-          console.log('paspdpaspdpasdppasdppasdpapsdpa', streamEvent);
-          this.dataStore.screenRequests.push(new ScreenRequestModel(theStream.getID()));
-          this.notifyRequestsChange();
+        switch (theMessage.action) {
+          case 'switchMode':
+            this.hostMode = theMessage.mode;
+            this.currentMode = theMessage.mode;
+            this.applyMode();
+            break;
+          case 'screenRequest':
+            if (this.role === 'host') {
+              let stream = {id: theMessage.streamId,
+                            active: true,
+                            screensharing: true,
+                            stream: {},
+                            local: false};
+              this.dataStore.screenRequests.push(new ScreenRequestModel(stream));
+              this.notifyRequestsChange();
+            }
+            break
+          default:
+            console.log("Unknown Control message");
         }
-      break;
+        break;
       default:
         console.log("Default");
     }
@@ -254,5 +297,102 @@ export class LicodeService {
     }
     console.error(errMsg);
     return Observable.throw(errMsg);
+  }
+
+  private maybeToggleLocalMode() {
+    if (!this.hostMode){
+      console.log("There is not a hostMode yet");
+      return;
+    }
+    if (this.currentMode == this.hostMode) {
+      this.currentMode.modeName = 'grid';
+    } else {
+      this.currentMode = this.hostMode;
+    }
+    this.applyMode();
+  }
+
+  private publishNewMode (mode:any) {
+    if (this.role === 'guest') {
+      return;
+    }
+    this.myStream.sendData({type:'Control', action: 'switchMode', mode:mode});
+  }
+
+  maybeSwitchHostMode(newMode:string, stream:Stream) {
+    console.log("maybeSwitchHostMode", newMode, stream);
+    if (this.role === 'guest') {
+      return;
+    }
+    this.currentMode.modeName = newMode;
+    this.currentMode.mainStreamId = stream.id;
+    this.hostMode = this.currentMode;
+    this.publishNewMode(this.currentMode);
+    this.applyMode();
+  }
+
+  private applyMode() {
+    let currentStreamId = this.currentMode.mainStreamId;
+    let mode = this.currentMode.modeName;
+    let mainStreamId;
+    let mainStream:Stream;
+    if (mode !== 'grid') {
+      for (let stream of this.dataStore.streams) {
+        if (currentStreamId === stream.id) {
+          mainStreamId = currentStreamId;
+          mainStream = stream;
+        }
+      }
+      if (!mainStream) {
+        return;
+      }
+    }
+
+    let screenStreamId;
+    switch(this.currentMode.modeName) {
+      case 'grid':
+        this.dataStore.streams.sort((a:Stream, b:Stream) => {
+          if (a.local) { return -1; }
+          return 1;
+        });
+        break;
+      case 'oneplusn':
+        mainStreamId = mainStream.id;
+        this.dataStore.streams.sort((a:Stream, b:Stream) => {
+          if (a.id === mainStreamId) {
+            return -1;
+          } else if (b.id === mainStreamId) {
+            return 1;
+          } else if (a.local) {
+            return -1;
+          }
+          return 1;
+        });
+        break;
+      case 'screensharing':
+        screenStreamId = mainStream.id;
+        mainStreamId = mainStream.stream.getAttributes().myStream;
+        this.dataStore.streams.sort((a:Stream, b:Stream) => {
+          if (a.id === screenStreamId) {
+            return -1;
+          } else if (b.id === screenStreamId) {
+            return 1;
+          } else if (a.id === mainStreamId) {
+            return -1;
+          } else if (b.id === mainStreamId) {
+            return 1;
+          } else if (a.local) {
+            return -1;
+          }
+          return 1;
+        });
+        break;
+      default:
+        console.log('Unknown mode', mode);
+        return;
+    }
+    this.dataStore.mode = mode;
+    this.notifyStreamsChange();
+    this.notifyModeChange();
   }
 }
