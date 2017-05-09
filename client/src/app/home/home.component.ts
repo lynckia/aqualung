@@ -16,15 +16,12 @@ export class HomeComponent implements OnInit {
   }
 
   createRoom(room, nickname) {
-  	
-  	var hostKey;
 
   	if (!room) {
-  		room = Math.floor(Math.random() * 1000000) + 1;
-  		hostKey = Math.floor(Math.random() * 1000000) + 1;			  		
+  		room = Math.floor(Math.random() * 1000000) + 1;	  		
   	}
 
-  	this.router.navigate(['/room', room, {key: hostKey, nickname: nickname}]);
+  	this.router.navigate(['/room', room, {nickname: nickname}]);
   }
 
 }
