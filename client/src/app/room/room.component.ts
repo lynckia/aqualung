@@ -30,7 +30,7 @@ export class RoomComponent implements OnInit {
 
       console.log('***********ROLE', this.role);
 
-      this.licodeService.connect(this.id, this.nickname).subscribe(
+      this.licodeService.connect(this.id, this.nickname, this.role).subscribe(
         room => {
             // Log errors if any
             console.log('ahi va', room);

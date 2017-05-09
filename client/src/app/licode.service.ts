@@ -31,6 +31,7 @@ export class LicodeService {
   private room;
   private myStream;
   private nickname: string;
+  private role: string;
 
   constructor(private http: Http) {
     this.dataStore = { streams: [], chatMessages: [] };
@@ -38,9 +39,10 @@ export class LicodeService {
     this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
   }
 
-  connect(id, nickname): Observable<any> {
+  connect(id, nickname, role): Observable<any> {
     console.log('Licode service, creating token for room', id, ' name ', nickname);
     this.nickname = nickname;
+    this.role = role;
 
     return this.http.post(this.basicExampleUrl, {username: 'user', role: 'presenter', room: id})
     .map(res => {
