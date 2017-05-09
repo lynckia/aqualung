@@ -25,9 +25,11 @@ export class LicodeService {
   private basicExampleUrl = 'https://chotis2.dit.upm.es:3004/createToken';
   private streams: BehaviorSubject<Stream[]>;
   private chatMessages: BehaviorSubject<ChatMessageModel[]>;
+  private mode: BehaviorSubject<string>;
   private dataStore: {
     streams: Stream[],
-    chatMessages: ChatMessageModel[]
+    chatMessages: ChatMessageModel[],
+    mode: string
   };
   private room;
   private myStream;
@@ -36,10 +38,10 @@ export class LicodeService {
   private role: string;
 
   constructor(private http: Http, private busService:BusService) {
-    this.dataStore = { streams: [], chatMessages: [] };
+    this.dataStore = { streams: [], chatMessages: [], mode: 'grid' };
     this.streams = <BehaviorSubject<Stream[]>>new BehaviorSubject([]);
     this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
-
+    this.mode = <BehaviorSubject<string>>new BehaviorSubject('grid');
     this.busService.messageSent$.subscribe(
       message => {
         console.log('Licode Service, Received Messsage from bus', message);
@@ -140,7 +142,7 @@ export class LicodeService {
       } else {
         console.log('foo')
         // TODO: Change to screen sharing mode
-      } 
+      }
     });
     this.myScreen.addEventListener('access-denied', (event) => {
       console.log("Access to webcam and/or microphone rejected");
@@ -150,7 +152,7 @@ export class LicodeService {
   private unPublishScreen() {
     this.room.unpublish(this.myScreen);
     this.myScreen.close();
-    this.myScreen = undefined; 
+    this.myScreen = undefined;
   }
 
   private onRoomConnected(roomEvent) {
@@ -193,12 +195,14 @@ export class LicodeService {
 
   private notifyStreamsChange() {
     let newStreamList = Object.assign({}, this.dataStore).streams;
-    newStreamList.sort((a:Stream, b:Stream) => {
-      if (a.local) { return -1; }
-      return 1;
-    });
     this.streams.next(newStreamList);
   }
+
+  private notifyModeChange() {
+    let newMode = Object.assign({}, this.dataStore).mode;
+    this.mode.next(newMode);
+  }
+
   private notifyChatChange() {
     let newChatList = Object.assign({}, this.dataStore).chatMessages;
     this.chatMessages.next(newChatList);
@@ -233,5 +237,58 @@ export class LicodeService {
     }
     console.error(errMsg);
     return Observable.throw(errMsg);
+  }
+
+  // switchToMode('grid');
+  // switchToMode('oneplusn', mainStream);
+  // switchToMode('screensharing', screenStream);
+  switchToMode(mode:string, mainStream:Stream = undefined) {
+    let mainStreamId;
+    let screenStreamId;
+    switch(mode) {
+      case 'grid':
+        this.dataStore.streams.sort((a:Stream, b:Stream) => {
+          if (a.local) { return -1; }
+          return 1;
+        });
+        break;
+      case 'oneplusn':
+        mainStreamId = mainStream.id;
+        this.dataStore.streams.sort((a:Stream, b:Stream) => {
+          if (a.id === mainStreamId) {
+            return -1;
+          } else if (b.id === mainStreamId) {
+            return 1;
+          } else if (a.local) {
+            return -1;
+          }
+          return 1;
+        });
+        break;
+      case 'screensharing':
+        screenStreamId = mainStream.id;
+        mainStreamId = mainStream.stream.getAttributes().myStream;
+        this.dataStore.streams.sort((a:Stream, b:Stream) => {
+          if (a.id === screenStreamId) {
+            return -1;
+          } else if (b.id === screenStreamId) {
+            return 1;
+          } else if (a.id === mainStreamId) {
+            return -1;
+          } else if (b.id === mainStreamId) {
+            return 1;
+          } else if (a.local) {
+            return -1;
+          }
+          return 1;
+        });
+        break;
+      default:
+        console.log('Unknown mode', mode);
+        return;
+    }
+    this.dataStore.mode = mode;
+    this.notifyStreamsChange();
+    this.notifyModeChange();
   }
 }
