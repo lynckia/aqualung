@@ -1,0 +1,10 @@
+<div class="chat-box">
+  <div class="menu">
+              <div class="name">Chat</div>
+  </div>
+  <ol class="chat">
+       <li *ngFor="let message of chatMessages">
+         <chat-message [message]="message"> </chat-message>
+       </li>
+ </ol>
+</div>

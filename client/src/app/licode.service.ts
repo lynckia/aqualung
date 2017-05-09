@@ -6,6 +6,8 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 
+import { ChatMessageModel } from './chat-message/chatmessage';
+
 declare var Erizo:any;
 
 export class Stream {
@@ -21,15 +23,18 @@ export class LicodeService {
 
   private basicExampleUrl = 'http://chotis2.dit.upm.es:3001/createToken';
   private streams: BehaviorSubject<Stream[]>;
+  private chatMessages: BehaviorSubject<ChatMessageModel[]>;
   private dataStore: {
-    streams: Stream[];
-  }
+    streams: Stream[],
+    chatMessages: ChatMessageModel[]
+  };
   private room;
   private myStream;
 
   constructor(private http: Http) {
-    this.dataStore = { streams: [] };
+    this.dataStore = { streams: [], chatMessages: [] };
     this.streams = <BehaviorSubject<Stream[]>>new BehaviorSubject([]);
+    this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
   }
 
   connect(id): Observable<any> {
@@ -60,7 +65,7 @@ export class LicodeService {
   }
 
   publish() {
-    this.myStream = Erizo.Stream({audio: true, video: true});
+    this.myStream = Erizo.Stream({audio: true, video: true, data: true});
     this.myStream.init();
     this.myStream.addEventListener('access-accepted', (event) => {
       console.log("Access to webcam and/or microphone granted");
@@ -69,6 +74,9 @@ export class LicodeService {
     this.myStream.addEventListener('access-denied', (event) => {
       console.log("Access to webcam and/or microphone rejected");
     });
+  }
+  getChatMessages() :Observable<ChatMessageModel[]> {
+    return this.chatMessages.asObservable();
   }
 
   private onRoomConnected(roomEvent) {
@@ -83,6 +91,7 @@ export class LicodeService {
   private onAddStream(streamEvent) {
     if (streamEvent.stream.getID() !== this.myStream.getID()) {
       this.room.subscribe(streamEvent.stream);
+      streamEvent.stream.addEventListener("stream-data", this.onDataMessage.bind(this));
     } else {
       this.playStream({stream: this.myStream});
     }
@@ -115,6 +124,27 @@ export class LicodeService {
       return 1;
     });
     this.streams.next(newStreamList);
+  }
+  private notifyChatChange() {
+    let newChatList = Object.assign({}, this.dataStore).chatMessages;
+    this.chatMessages.next(newChatList);
+  }
+
+  private onDataMessage(streamEvent) {
+    console.log("New data message ", streamEvent);
+    switch(streamEvent.msg.type) {
+      case 'Chat':
+        let theMessage = streamEvent.msg;
+        console.log("new chat message");
+        this.dataStore.chatMessages.push(new ChatMessageModel(theMessage.name, theMessage.text));
+        this.notifyChatChange();
+      break;
+      case 'Control':
+        console.log("new control message");
+      break;
+      default:
+        console.log("Default");
+    }
   }
 
   private handleError (error: Response | any) {
