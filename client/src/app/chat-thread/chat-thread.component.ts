@@ -30,7 +30,8 @@ export class ChatThreadComponent implements OnInit {
     this.busService.messageSent$.subscribe(
       message => {
         console.log("Received Messsage from bus", message);
-      });
+      }
+    );
   }
   ngOnInit(): void {
   }

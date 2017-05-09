@@ -28,9 +28,7 @@ export class RoomComponent implements OnInit {
 
       if (parseInt(this.id) == this.id) this.role = 'host';
       else this.role = 'guest';
-
-      console.log('***********ROLE', this.role);
-
+      
       this.licodeService.connect(this.id, this.nickname, this.role).subscribe(
         room => {
             // Log errors if any

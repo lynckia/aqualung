@@ -5,6 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
+import { BusService } from './bus.service';
 
 import { ChatMessageModel } from './chat-message/chatmessage';
 
@@ -21,7 +22,7 @@ export class Stream {
 @Injectable()
 export class LicodeService {
 
-  private basicExampleUrl = 'http://chotis2.dit.upm.es:3001/createToken';
+  private basicExampleUrl = 'https://chotis2.dit.upm.es:3004/createToken';
   private streams: BehaviorSubject<Stream[]>;
   private chatMessages: BehaviorSubject<ChatMessageModel[]>;
   private dataStore: {
@@ -30,13 +31,31 @@ export class LicodeService {
   };
   private room;
   private myStream;
+  private myScreen;
   private nickname: string;
   private role: string;
 
-  constructor(private http: Http) {
+  constructor(private http: Http, private busService:BusService) {
     this.dataStore = { streams: [], chatMessages: [] };
     this.streams = <BehaviorSubject<Stream[]>>new BehaviorSubject([]);
     this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
+
+    this.busService.messageSent$.subscribe(
+      message => {
+        console.log('Licode Service, Received Messsage from bus', message);
+        switch(message) {
+          case 'television':
+            if(!this.myScreen) {
+              this.publishScreen();
+            } else {
+              this.unPublishScreen();
+            }
+            break;
+          default:
+            console.log('Licode Service, Unvalid message');
+        }
+      }
+    );
   }
 
   connect(id, nickname, role): Observable<any> {
@@ -44,7 +63,11 @@ export class LicodeService {
     this.nickname = nickname;
     this.role = role;
 
-    return this.http.post(this.basicExampleUrl, {username: 'user', role: 'presenter', room: id})
+    var roomData = {username: 'user', role: 'presenter', room: id};
+    if (this.role === 'guest') roomData['roomId'] = id;
+    else roomData['room'] = id;
+
+    return this.http.post(this.basicExampleUrl, roomData)
     .map(res => {
       let token = res.text();
       this.room = Erizo.Room({token: token});
@@ -72,11 +95,11 @@ export class LicodeService {
     this.myStream = Erizo.Stream({audio: true, video: true, data: true, attributes: {name:this.nickname}});
     this.myStream.init();
     this.myStream.addEventListener('access-accepted', (event) => {
-      console.log("Access to webcam and/or microphone granted");
+      console.log("Access to screen sharing granted");
       this.room.publish(this.myStream);
     });
     this.myStream.addEventListener('access-denied', (event) => {
-      console.log("Access to webcam and/or microphone rejected");
+      console.log("Access to screen sharing rejected");
     });
   }
   getChatMessages() :Observable<ChatMessageModel[]> {
@@ -88,6 +111,30 @@ export class LicodeService {
     this.myStream.sendData({type:'Chat', text:text, nickname: this.nickname});
     this.dataStore.chatMessages.push(new ChatMessageModel(this.nickname, text));
     this.notifyChatChange();
+  }
+
+  private publishScreen() {
+    this.myScreen = Erizo.Stream({screen: true, attributes: {myStream: this.myStream.getID()}});
+    this.myScreen.init();
+    this.myScreen.addEventListener('access-accepted', (event) => {
+      console.log("Access to webcam and/or microphone granted");
+      this.room.publish(this.myScreen);
+      if (this.role === 'guest') {
+        this.myStream.sendData({type:'Control', action: 'requestScreen'});
+      } else {
+        console.log('foo')
+        // TODO: Change to screen sharing mode
+      } 
+    });
+    this.myScreen.addEventListener('access-denied', (event) => {
+      console.log("Access to webcam and/or microphone rejected");
+    });
+  }
+
+  private unPublishScreen() {
+    this.room.unpublish(this.myScreen);
+    this.myScreen.close();
+    this.myScreen = undefined; 
   }
 
   private onRoomConnected(roomEvent) {
@@ -143,15 +190,15 @@ export class LicodeService {
 
   private onDataMessage(streamEvent) {
     console.log("New data message ", streamEvent);
+    let theMessage = streamEvent.msg;
     switch(streamEvent.msg.type) {
       case 'Chat':
-        let theMessage = streamEvent.msg;
         console.log("new chat message", theMessage);
         this.dataStore.chatMessages.push(new ChatMessageModel(theMessage.nickname, theMessage.text));
         this.notifyChatChange();
       break;
       case 'Control':
-        console.log("new control message");
+        console.log("new control message", theMessage);
       break;
       default:
         console.log("Default");
