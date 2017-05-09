@@ -1,0 +1,18 @@
+<div class="settings">
+  <div id="container">
+    <video class="myVideo" autoplay #videoElement></video>
+    <div class="select">
+      <label for="audioSource">Audio input source: </label><select #audioInputSelect (change)="onChange($event.target.value)"></select>
+    </div>
+
+    <div class="select">
+      <label for="videoSource">Video source: </label><select #videoInputSelect (change)="onChange($event.target.value)"></select>
+    </div>
+
+
+    <div id="footer">
+      <div id="save"><a (click)="saveSettings()">Save Settings</a></div>
+      <div id="cancel"><a (click)="cancel()">Cancel</a></div>
+    </div>
+  </div>
+</div>

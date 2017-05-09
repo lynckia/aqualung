@@ -13,6 +13,7 @@ import { ChatThreadComponent } from './chat-thread/chat-thread.component';
 import { ChatMessageComponent } from './chat-message/chat-message.component';
 import { SidebarButtonComponent } from './sidebar-button/sidebar-button.component'
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { SettingsComponent } from './settings/settings.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { SidebarComponent } from './sidebar/sidebar.component';
     ChatThreadComponent,
     ChatMessageComponent,
     SidebarComponent,
-    SidebarButtonComponent
+    SidebarButtonComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,

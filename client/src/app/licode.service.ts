@@ -68,8 +68,10 @@ export class LicodeService {
     return this.streams.asObservable();
   }
 
-  publish() {
-    this.myStream = Erizo.Stream({audio: true, video: true, data: true, attributes: {name:this.nickname}});
+  publish(video, audio) {
+    video = video || true;
+    audio = audio || true;
+    this.myStream = Erizo.Stream({audio: audio, video: video, data: true, attributes: {name:this.nickname}});
     this.myStream.init();
     this.myStream.addEventListener('access-accepted', (event) => {
       console.log("Access to webcam and/or microphone granted");
@@ -79,6 +81,16 @@ export class LicodeService {
       console.log("Access to webcam and/or microphone rejected");
     });
   }
+
+  unpublish() {
+    this.room.unpublish(this.myStream);
+  }
+
+  updateAVConstraints(video, audio) {
+    this.unpublish();
+    this.publish(video, audio);
+  }
+
   getChatMessages() :Observable<ChatMessageModel[]> {
     return this.chatMessages.asObservable();
   }
@@ -92,7 +104,7 @@ export class LicodeService {
 
   private onRoomConnected(roomEvent) {
     let nativeStreams = roomEvent.streams;
-    this.publish();
+    this.publish(true, true);
     for (let stream of nativeStreams) {
       this.onAddStream({stream: stream});
     }
@@ -171,6 +183,4 @@ export class LicodeService {
     console.error(errMsg);
     return Observable.throw(errMsg);
   }
-
-
 }

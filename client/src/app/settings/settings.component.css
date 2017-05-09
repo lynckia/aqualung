@@ -1,0 +1,34 @@
+.settings {
+  width: 100%;
+}
+.settings .myVideo {
+  width: 200px;
+  height: 200px;
+  margin-left: 100px;
+}
+
+.settings a {
+  cursor: pointer;
+}
+
+.select {
+  margin-left: 20px;
+  text-align: center;
+}
+
+#footer {
+  height: 20px;
+  width: 100%;
+  margin-top: 20px;
+  padding-bottom: 20px;
+}
+
+.settings #save {
+  float: left;
+  margin-left: 20px;
+}
+
+.settings #cancel {
+  float: right;
+  margin-right: 20px;
+}

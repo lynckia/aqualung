@@ -6,7 +6,7 @@
   width: 40px;
   height: 200px;
   z-index: 20;
-  background-color: white;
+  background-color: gray;
   opacity: 0.5;
   vertical-align: middle;
 }
@@ -22,4 +22,17 @@
   z-index: 0;
   background-color: white;
   opacity: 1;
+}
+
+.settings_container {
+  position: absolute;
+  left: 50%;
+  margin-left: -200px;
+  margin-top: -150px;
+  top: 50%;
+  width: 400px;
+  height: 300px;
+  z-index: 20;
+  background-color: rgba(200, 200, 200, .5);
+  border: 1px white;
 }
