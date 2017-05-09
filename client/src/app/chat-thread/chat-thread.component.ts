@@ -21,4 +21,7 @@ export class ChatThreadComponent implements OnInit {
   }
   ngOnInit(): void {
   }
+  onEnter(value: string) {
+    console.log("Sending ", value);
+    this.licodeService.publishChatMessage(value); }
 }

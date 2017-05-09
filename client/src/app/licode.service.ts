@@ -83,6 +83,10 @@ export class LicodeService {
     return this.chatMessages.asObservable();
   }
 
+  publishChatMessage(text:string) {
+    this.room.sendData({type:'Chat', text:text, nickname: this.nickname});
+  }
+
   private onRoomConnected(roomEvent) {
     let nativeStreams = roomEvent.streams;
     this.publish();
@@ -139,8 +143,8 @@ export class LicodeService {
     switch(streamEvent.msg.type) {
       case 'Chat':
         let theMessage = streamEvent.msg;
-        console.log("new chat message");
-        this.dataStore.chatMessages.push(new ChatMessageModel(theMessage.name, theMessage.text));
+        console.log("new chat message", theMessage);
+        this.dataStore.chatMessages.push(new ChatMessageModel(theMessage.nickname, theMessage.text));
         this.notifyChatChange();
       break;
       case 'Control':

@@ -7,4 +7,6 @@
          <chat-message [message]="message"> </chat-message>
        </li>
  </ol>
+<input #box (keyup.enter)="onEnter(box.value)" class="textarea" type="text" placeholder="Type here!"/>
+<div class="emojis">{{value}}</div>
 </div>
