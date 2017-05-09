@@ -1,0 +1,16 @@
+.sidebar {
+  display: block;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  vertical-align: middle;
+}
+
+.sidebar .button {
+  float: right;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+  padding-bottom: 5px;
+}

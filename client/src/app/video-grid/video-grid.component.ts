@@ -16,7 +16,7 @@ export class VideoGridComponent implements OnInit {
   private mode: string;
 
   constructor(private licodeService: LicodeService) {
-    this.mode = 'grid';
+    this.mode = 'oneplusn';
     this.streamSubscription = this.licodeService.getStreams().subscribe(streams => { this.streams = streams; });
   }
 
