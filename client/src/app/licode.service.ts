@@ -30,6 +30,8 @@ export class LicodeService {
   };
   private room;
   private myStream;
+  private nickname: string;
+  private hostKey;
 
   constructor(private http: Http) {
     this.dataStore = { streams: [], chatMessages: [] };
@@ -37,8 +39,10 @@ export class LicodeService {
     this.chatMessages = <BehaviorSubject<ChatMessageModel[]>>new BehaviorSubject([]);
   }
 
-  connect(id): Observable<any> {
-    console.log('Licode service, creating token for room', id);
+  connect(id, nickname, hostKey): Observable<any> {
+    console.log('Licode service, creating token for room', id, ' name ', nickname);
+    this.nickname = nickname;
+    this.hostKey = hostKey;
 
     return this.http.post(this.basicExampleUrl, {username: 'user', role: 'presenter', room: id})
     .map(res => {
@@ -65,7 +69,7 @@ export class LicodeService {
   }
 
   publish() {
-    this.myStream = Erizo.Stream({audio: true, video: true, data: true});
+    this.myStream = Erizo.Stream({audio: true, video: true, data: true, attributes: {name:this.nickname}});
     this.myStream.init();
     this.myStream.addEventListener('access-accepted', (event) => {
       console.log("Access to webcam and/or microphone granted");
